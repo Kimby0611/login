@@ -1,0 +1,109 @@
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    flex-direction: column;
+}
+
+.home-component {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.login-user{
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-user p {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.login-user button {
+  width: 80px;
+  height: 30px;
+}
+
+.home-login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+}
+.home-login-button button {
+    margin-top: 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: none;
+    background-color: gray;
+}
+.home-login-button img {
+    width: 50px;
+    height: 50px;
+}
+ 
+/*회원가입 css*/
+.register-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 10% auto;
+    width: 400px;
+  }
+
+.register-form div {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .register-form input[type='text'],
+  .register-form input[type='password'],
+  .register-form input[type='email'],
+  .register-form input[type='date'] {
+    width: calc(100% - 90px);
+    border: 1px solid black;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  .register-form button[type='button'] {
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px;
+  }
+  
+  .register-form button[type='submit'] {
+    background-color: black;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 30%;
+    padding: 10px;
+  }
+
+  .error {
+    color: red;
+    font-size: 0.9em;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .error p {
+    width: calc(100% - 90px);
+    margin: 0;
+    padding: 0;
+  }
