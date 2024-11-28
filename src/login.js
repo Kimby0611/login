@@ -2,20 +2,13 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
-const authMiddleware = require('./component/authMiddleware.js');
 
 const app = express();
 const port = 5000;
 
-app.use(cors({
-  origin: 'http://localhost:3000', // 요청을 허용할 프론트엔드 도메인
-  credentials: true, // 쿠키를 포함한 요청 허용
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // MySQL 연결 및 에러처리
 const db = mysql.createConnection({
@@ -114,34 +107,12 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: '아이디 혹은 비밀번호를 확인해주세요.' });
     }
 
-    //4. jwt생성
-    const token = jwt.sign(
-      {id:user.id, nickname:user.nickname},
-      'your-secret-key',
-      {expiresIn : '1h'}
-    );
-    //5.토큰 저장
-    res.cookie('authToken', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax'
-    });
-
-    // 6. 로그인 성공 시 응답
-    res.status(200).json({ message: '로그인 성공!', 
-      user: { id: user.id, nickname: user.nickname } });
+    // 4. 로그인 성공 시 응답
+    res.status(200).json({ message: '로그인 성공!', user: { id: user.id, nickname: user.nickname } });
   });
 });
 
-app.post('/logout', (req, res) => {
-  res.clearCookie('authToken', {
-    httpOnly: true,
-    secure: false,
-    sameSite: 'strict',
-  });
-  res.status(200).json({ message: '로그아웃 성공!' });
-});
-
+//중복 체크
 app.get('/check-duplicate-id', (req, res) => {
   const {id}  =req.query;
 
@@ -165,36 +136,91 @@ app.get('/check-duplicate-nickname', (req,res) => {
     }
     const isAvailable = result[0].count === 0;
     res.status(200).json({available:isAvailable});
-  })
-})
+  });
+});
 
-app.get('/auth-status', (req, res) => {
-  const token = req.cookies.authToken;
+app.get('/user-info', (req, res) => {
+  const { id } = req.query;
 
-  // 쿠키에 토큰이 없을 경우
-  if (!token) {
-    return res.status(401).json({ message: '로그인 상태가 아닙니다.' });
-  }
-
-  try {
-    const secretKey = process.env.JWT_SECRET_KEY || 'default-secret-key';
-    const decoded = jwt.verify(token, secretKey);
-
-    // 인증 성공 시 사용자 정보 반환
-    res.status(200).json({ id: decoded.id, nickname: decoded.nickname });
-  } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: '토큰이 만료되었습니다. 다시 로그인하세요.' });
+  // 예시 데이터베이스 쿼리
+  const findUserQuery = "SELECT email, birthday FROM login WHERE id = ?";
+  db.query(findUserQuery, [id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: '서버 오류가 발생했습니다.' });
     }
-    res.status(401).json({ message: '유효하지 않은 토큰입니다.' });
-  }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const user = results[0];
+    res.status(200).json({
+      email: user.email,
+      birthday: user.birthday,
+    });
+  });
 });
 
-app.get('/mypage', authMiddleware, (req, res) => {
-  const { id, nickname } = req.user;
-  res.status(200).json({ id, nickname });
-});
+// 회원 정보 수정 API
+app.put('/update-user', (req, res) => {
+  const { id, email, birthday, nickname } = req.body;
 
+  const updateUserQuery = `
+    UPDATE login 
+    SET email = ?, birthday = ?, nickname = ? 
+    WHERE id = ?
+  `;
+
+  db.query(updateUserQuery, [email || null, birthday || null, nickname || null, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    res.status(200).json({ message: '회원 정보가 성공적으로 업데이트되었습니다.' });
+  });
+});
+// 비밀번호 변경 API
+app.post('/change-password', async (req, res) => {
+  const { id, currentPassword, newPassword } = req.body;
+
+  // 1. 유저 찾기
+  const findUserQuery = "SELECT * FROM login WHERE id = ?";
+  db.query(findUserQuery, [id], async (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const user = results[0];
+
+    // 2. 현재 비밀번호 검증
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: '현재 비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 3. 새 비밀번호 저장
+    try {
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      const updatePasswordQuery = "UPDATE login SET password = ? WHERE id = ?";
+      db.query(updatePasswordQuery, [hashedNewPassword, id], (err, result) => {
+        if (err) {
+          return res.status(500).json({ error: '비밀번호 변경 중 오류가 발생했습니다.' });
+        }
+        res.status(200).json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+      });
+    } catch (error) {
+      res.status(500).json({ error: '비밀번호 암호화 중 오류가 발생했습니다.' });
+    }
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

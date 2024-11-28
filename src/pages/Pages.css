@@ -7,28 +7,50 @@
     flex-direction: column;
 }
 
+/*홈페이지 css*/
 .home-component {
     font-size: 2rem;
     font-weight: bold;
 }
 
 .login-user{
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-user p {
-  font-size: 20px;
+  position: relative;
+  display: inline-block;
   cursor: pointer;
 }
 
-.login-user button {
-  width: 80px;
-  height: 30px;
+.nickname {
+  margin: 0;
+  font-weight: bold;
+  color: black;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-menu button:hover {
+  background-color: #f0f0f0;
 }
 
 .home-login-button {
@@ -107,3 +129,93 @@
     margin: 0;
     padding: 0;
   }
+
+  /*글쓰기 css*/
+.new-write-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+}
+
+.new-write-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.new-write-textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.new-write-file-input {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.new-write-preview-container {
+  margin-bottom: 20px;
+}
+
+.new-write-preview-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  position: relative;
+}
+
+.new-write-preview-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.new-write-preview-video {
+  width: 200px;
+  height: auto;
+  margin-right: 10px;
+}
+
+.new-write-preview-text {
+  flex-grow: 1;
+  font-size: 14px;
+}
+
+.new-write-remove-button {
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+/* 제출 버튼 */
+.new-write-submit-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.new-write-submit-button:hover {
+  background-color: #0056b3;
+}

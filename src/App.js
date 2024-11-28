@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import Register from './pages/Register';
 import { AuthProvider } from './component/AuthContext';
 import MyPage from './pages/MyPage';
+import NewWrite from './pages/NewWrite';
 
 const App = () => (
   <AuthProvider>
@@ -12,6 +13,7 @@ const App = () => (
         <Route path ='/' element = {<HomePage/>}/>
         <Route path ='/register' element = {<Register/>}/>
         <Route path ='/mypage' element = {<MyPage/>}/>
+        <Route path ='/newwrite' element = {<NewWrite/>}/>
       </Routes>
     </Router>
   </AuthProvider>

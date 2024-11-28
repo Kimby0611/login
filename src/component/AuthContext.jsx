@@ -3,16 +3,19 @@ import React, { createContext, useContext, useState } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedNickname = localStorage.getItem('userNickname');
+    return storedNickname ? { nickname: storedNickname } : null;
+  });
 
   const login = (nickname) => {
-    setUser(nickname);
+    setUser({ nickname });
     localStorage.setItem('userNickname', nickname);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('nickname');
+    localStorage.removeItem('userNickname');
   };
 
   return (
