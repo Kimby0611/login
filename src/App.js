@@ -5,6 +5,8 @@ import Register from './pages/Register';
 import { AuthProvider } from './component/AuthContext';
 import MyPage from './pages/MyPage';
 import NewWrite from './pages/NewWrite';
+import { CheckPassword } from './revise/CheckPassword';
+import EditInfo from './revise/EditInfo';
 
 const App = () => (
   <AuthProvider>
@@ -14,6 +16,8 @@ const App = () => (
         <Route path ='/register' element = {<Register/>}/>
         <Route path ='/mypage' element = {<MyPage/>}/>
         <Route path ='/newwrite' element = {<NewWrite/>}/>
+        <Route path ='/checkpassword' element = {<CheckPassword/>}/>
+        <Route path = '/editinfo' element = {<EditInfo/>}/>
       </Routes>
     </Router>
   </AuthProvider>

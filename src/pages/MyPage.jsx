@@ -1,114 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './Pages.css';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../component/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import './Pages.css';
 
 const MyPage = () => {
   const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [birthday, setBirthday] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
+  //상태 값 설정
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/user-info`, {
-          params: { id: user.id },
-        });
-        setEmail(response.data.email || '');
-        setBirthday(response.data.birthday || '');
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-      }
-    };
-    fetchUserInfo();
+    if (user) {
+      setEmail(user.email || '');
+      setBirthday(formatDate(user.birthday) || '');
+    }
   }, [user]);
 
-  const handleUpdateUserInfo = async (field, value) => {
-    setIsLoading(true);
-    try {
-      const response = await axios.post('http://localhost:5000/update-user', {
-        id: user.id,
-        [field]: value,
-      });
-      setMessage(response.data.message);
-    } catch (error) {
-      setMessage(error.response?.data?.message || '오류 발생');
-    } finally {
-      setIsLoading(false);
-    }
+  const formatDate = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  const handleUpdatePassword = async () => {
-    if (newPassword.length < 6) {
-      setMessage('비밀번호는 최소 6자 이상이어야 합니다.');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const response = await axios.post('http://localhost:5000/change-password', {
-        id: user.id,
-        currentPassword,
-        newPassword,
-      });
-      setMessage(response.data.message);
-    } catch (error) {
-      setMessage(error.response?.data?.message || '오류 발생');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleEdit = () => {
+    navigate('/checkpassword');
+  }
 
   return (
     <div className="mypage">
       <h2>마이페이지</h2>
-      <p>닉네임: {user.nickname}</p>
-      <div>
-        <h3>이메일</h3>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="이메일 추가 또는 수정"
-        />
-        <button onClick={() => handleUpdateUserInfo('email', email)} disabled={isLoading}>
-          {isLoading ? '저장 중...' : '저장'}
-        </button>
+      <div className='mypage-info'>
+      <p>닉네임 :</p> 
+      <p>{user?.nickname}</p>
       </div>
-      <div>
-        <h3>생년월일</h3>
-        <input
-          type="date"
-          value={birthday}
-          onChange={(e) => setBirthday(e.target.value)}
-          placeholder="생년월일 추가 또는 수정"
-        />
-        <button onClick={() => handleUpdateUserInfo('birthday', birthday)} disabled={isLoading}>
-          {isLoading ? '저장 중...' : '저장'}
-        </button>
+      <div className='mypage-info'>
+        <p>이메일 : </p>
+        {user?.email ? <p>{email}</p> : <p>이메일을 입력해 주세요</p>}
       </div>
-      <div>
-        <h3>비밀번호 변경</h3>
-        <input
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          placeholder="현재 비밀번호"
-        />
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="새 비밀번호"
-        />
-        <button onClick={handleUpdatePassword} disabled={isLoading}>
-          {isLoading ? '변경 중...' : '비밀번호 변경'}
-        </button>
+      <div className='mypage-info'>
+        <p>생년월일 : </p>
+        {user?.birthday ? <p>{birthday}</p> : <p>생년월일을 입력해 주세요</p>}
       </div>
-      {message && <p>{message}</p>}
+            <div>
+        <button onClick={handleEdit}>개인정보 수정</button>
+      </div>
     </div>
   );
 };

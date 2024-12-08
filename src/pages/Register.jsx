@@ -13,61 +13,58 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
-  const validateId = (value) => {
-    if (!value) return '필수 입력란입니다.';
-    if (!/[a-zA-Z0-9]{4,19}$/.test(value)) {
-      return '아이디: 5~20자의 영문 소문자와 숫자만 사용 가능합니다.';
-    }
-    return '';
+  //각 입력란 유효성 검사
+  const validators = {
+    id: (value) => {
+      if (!value) return '필수 입력란입니다.';
+      if (!/^[a-zA-Z0-9]{4,20}$/.test(value)) {
+        return '4~20자의 영문 소문자와 숫자만 사용 가능합니다.';
+      }
+      return '';
+    },
+    password: (value) => {
+      if (!value) return '필수 입력란입니다.';
+      if (!/^[a-z0-9]{4,20}$/.test(value)) {
+        return '4~20자리의 영문 소문자와 숫자만 사용 가능합니다.';
+      }
+      return '';
+    },
+    confirmPassword: (value, { password }) => {
+      if (value !== password) {
+        return '비밀번호가 일치하지 않습니다.';
+      }
+      return '';
+    },
+    nickname: (value) => {
+      if (!value) return '필수 입력란입니다.';
+      if (!/^[a-zA-Z0-9가-힣]*$/.test(value)) {
+        return '특수기호를 제외한 영문 대/소문자, 한글, 숫자만 사용 가능합니다.';
+      }
+      return '';
+    },
+    email: (value) => {
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return '유효한 이메일 주소를 입력해주세요.';
+      }
+      return '';
+    },
   };
 
-  const validatePassword = (value) => {
-    if (!value) return '필수 입력란입니다.';
-    const hasLetters = /[a-zA-Z]/.test(value);
-    const hasNumbers = /\d/.test(value);
-    const hasSpecialChars = /[!@#$%^&*]/.test(value);
-    const noRepeatingNumbers = !/(.)\1/.test(value);
-
-    if (!hasLetters || !hasNumbers || !hasSpecialChars) {
-      return '비밀번호: 6~20자의 영문 대/소문자, 숫자, 특수문자를 사용해야 합니다.';
-    }
-    if (!noRepeatingNumbers) {
-      return '비밀번호에 반복되는 숫자가 포함될 수 없습니다.';
-    }
-    return '';
+  // 유효성 검사 실행
+  const validateField = (field, value, extraData = {}) => {
+    return validators[field] ? validators[field](value, extraData) : '';
   };
 
-  const validateConfirmPassword = (value) => {
-    if (value !== password) {
-      return '비밀번호가 일치하지 않습니다.';
-    }
-    return '';
-  };
-
-  const validateNickname = (value) => {
-    if (!value) return '필수 입력란입니다.';
-    if (!/^[a-zA-Z0-9가-힣]*$/.test(value)) {
-      return '닉네임:특수기호를 제외한 영문 대/소문자 한글 숫자만 사용 가능합니다.';
-    }
-    return '';
-  };
-
-  const validateEmail = (value) => {
-    if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return '유효한 이메일 주소를 입력해주세요.';
-    }
-    return '';
-  };
-
+  //회원가입 폼 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {
-      id: validateId(id),
-      password: validatePassword(password),
-      confirmPassword: validateConfirmPassword(confirmPassword),
-      nickname: validateNickname(nickname),
-      email: validateEmail(email),
+      id: validateField('id', id),
+      password: validateField('password', password),
+      confirmPassword: validateField('confirmPassword', confirmPassword, { password }),
+      nickname: validateField('nickname', nickname),
+      email: validateField('email', email),
     };
 
     if (!isIdAvailable) newErrors.id = '중복된 아이디입니다.';
@@ -91,7 +88,6 @@ const Register = () => {
         if (response.ok) {
           setSuccessMessage(data.message);
           alert('회원가입 성공!');
-          // 필요 시 입력 필드 초기화
           setId('');
           setPassword('');
           setConfirmPassword('');
@@ -111,60 +107,34 @@ const Register = () => {
     }
   };
 
-  const duplicateId = async () => {
+  //중복 체크
+  const checkDuplicate = async (field, value) => {
     try {
-      const response = await fetch(`http://localhost:5000/check-duplicate-id?id=${id}`);
+      const response = await fetch(`http://localhost:5000/check-duplicate-${field}?${field}=${value}`);
       const data = await response.json();
       
       if (data.available) {
-        setIsIdAvailable(true);
         setErrors((prev) => ({
           ...prev,
-          id: '사용 가능한 아이디입니다.',
+          [field]: `사용 가능한 ${field === 'id' ? '아이디' : '닉네임'}입니다.`,
         }));
+        return true;
       } else {
-        setIsIdAvailable(false);
         setErrors((prev) => ({
           ...prev,
-          id: '중복된 아이디입니다.',
+          [field]: `중복된 ${field === 'id' ? '아이디' : '닉네임'}입니다.`,
         }));
+        return false;
       }
     } catch (error) {
-      console.error('아이디 중복 확인 오류:', error);
+      console.error(`${field} 중복 확인 오류:`, error);
       setErrors((prev) => ({
         ...prev,
-        id: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        [field]: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
       }));
+      return false;
     }
   };
-
-  const duplicateNickname = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/check-duplicate-nickname?nickname=${nickname}`);
-      const data = await response.json();
-      
-      if (data.available) {
-        setIsNicknameAvailable(true);
-        setErrors((prev) => ({
-          ...prev,
-          nickname: '사용 가능한 닉네임입니다.',
-        }));
-      } else {
-        setIsNicknameAvailable(false);
-        setErrors((prev) => ({
-          ...prev,
-          nickname: '중복된 닉네임입니다.',
-        }));
-      }
-    } catch (error) {
-      console.error('닉네임 중복 확인 오류:', error);
-      setErrors((prev) => ({
-        ...prev,
-        nickname: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      }));
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit}>
       <div className='register-form'>
@@ -179,7 +149,7 @@ const Register = () => {
             placeholder="아이디"
             required
           />
-          <button type="button" onClick={duplicateId}>
+          <button type="button" onClick={() => checkDuplicate('id', id)}>
             중복 확인
           </button>
         </div>
@@ -195,8 +165,10 @@ const Register = () => {
             placeholder="비밀번호"
             required
           />
-          {errors.password && <p className="error">{errors.password}</p>}
         </div>
+        {errors.password && <div className="error">
+          <p>{errors.password}</p>
+        </div>}
 
         <div>
           <input
@@ -205,9 +177,11 @@ const Register = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="비밀번호 확인"
             required
-          />
-          {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
+          />        
         </div>
+        {errors.confirmPassword && <div className="error">
+          <p>{errors.confirmPassword}</p>
+        </div>}
 
         <div>
           <input
@@ -220,7 +194,7 @@ const Register = () => {
             placeholder="닉네임"
             required
           />
-          <button type="button" onClick={duplicateNickname}>
+          <button type="button" onClick={() => checkDuplicate('id',nickname)}>
             중복 확인
           </button>
         </div>

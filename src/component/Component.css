@@ -1,24 +1,24 @@
-/*로그인 화면 css*/
+/*로그인 모달 css*/
 .overlay {
-    position: fixed; /* 화면에서 고정 위치 */
-    top: 0; /* 페이지 상단 */
+    position: fixed;
+    top: 0;
     left: 0;
     bottom: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.5); /* 배경 흐림 효과 */
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* 다른 콘텐츠 위에 표시되게 */
+    z-index: 1000;
   }
 
 .modal {
   background-color: white;
   width: 400px;
-  height: 300px;
+  max-width: 600px;
+  height: auto;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: relative;
+  padding: 20px;
 }
 
 .modal h2 {
@@ -49,9 +49,17 @@
   justify-content: center;
   gap: 20px;
 }
+
 .login-text-form span {
   cursor: pointer;
 }
+
+.login-text-form span:hover,
+.modal {
+  background-color: #f0f0f0;
+  color:#333;
+}
+
 .divider {
   margin: 20px 0;
   border: 0;
@@ -60,19 +68,4 @@
   
 .separator {
   color: black;
-}
-
-.modal .close-button {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  color: aliceblue;
-  cursor: pointer;
-  color: black;
-  border-radius: 8px;
-  box-sizing: border-box;
-  background-color: white;
-  border: none;
-  width: 100px;
-  height: 30px;
 }

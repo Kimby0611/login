@@ -8,11 +8,12 @@ import { useNavigate } from 'react-router-dom';
 const HomePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nickname, setNickname] = useState(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 드롭다운 상태 추가
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
+  //modal open및 close
   const openModal = () => setIsModalOpen(true);
   const closeModal = (nickname) => {
     setIsModalOpen(false);
@@ -21,12 +22,14 @@ const HomePage = () => {
     }
   };
 
+  //logout
   const handleLogout = () => {
     logout();
     localStorage.removeItem('nickname');
     setNickname(null);
   };
 
+  //localstorage에서 닉네임 가져오기
   useEffect(() => {
     if (user && user.nickname) {
       setNickname(user.nickname);
@@ -50,16 +53,17 @@ const HomePage = () => {
     setIsDropdownOpen(false);
   };
 
+  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        closeDropdown(); // 외부 클릭 시 드롭다운 닫기
+        closeDropdown();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside); // 이벤트 추가
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside); // 이벤트 제거
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -74,9 +78,9 @@ const HomePage = () => {
           </p>
             {isDropdownOpen && (
               <div className="dropdown-menu">
-                <button onClick={handleMyPage}>프로필 보기</button>
-                <button onClick={handleNewWrite}>글쓰기</button>
-                <button onClick={handleLogout}>로그아웃</button>
+                <button className='menu-item' onClick={handleMyPage}>프로필 보기</button>
+                <button className='menu-item' onClick={handleNewWrite}>글쓰기</button>
+                <button className='menu-item' onClick={handleLogout}>로그아웃</button>
               </div>
             )}
           </div>
